@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SpamMagnit — исследовательский проект об утечке номера через AdTech операторов</title>
+<meta name="description" content="SpamMagnit — Android-приложение, иллюстрирующее проблему утечки номера телефона через AdTech-интеграции мобильных операторов. Не собирает и не передаёт данные пользователя. Открытый исходный код, GPL-3.0." />
+<meta name="keywords" content="SpamMagnit, утечка номера телефона, AdTech, мобильные операторы, спам звонки, Android, Kotlin, приватность, персональные данные, не собирает данные" />
+<meta name="author" content="d010b" />
+<meta name="robots" content="index, follow" />
+<link rel="canonical" href="https://d010b.github.io/SpamMagnit/" />
+<link rel="sitemap" type="application/xml" title="Sitemap" href="https://d010b.github.io/SpamMagnit/sitemap.xml" />
+
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="SpamMagnit — исследовательский проект об утечке номера через AdTech операторов" />
+<meta property="og:description" content="Android-приложение, иллюстрирующее проблему утечки номера телефона через AdTech-интеграции операторов. Не собирает и не передаёт данные пользователя." />
+<meta property="og:url" content="https://d010b.github.io/SpamMagnit/" />
+<meta property="og:image" content="https://d010b.github.io/SpamMagnit/og-preview.png" />
+<meta property="og:locale" content="ru_RU" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="SpamMagnit — исследовательский проект об утечке номера" />
+<meta name="twitter:description" content="Android-приложение, иллюстрирующее утечку номера через AdTech операторов. Не собирает и не передаёт данные." />
+
+<!-- JSON-LD для поисковиков -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareSourceCode",
+  "name": "SpamMagnit",
+  "description": "Android-приложение, иллюстрирующее проблему утечки номера телефона через AdTech-интеграции мобильных операторов. Приложение не собирает и не передаёт данные пользователя.",
+  "codeRepository": "https://github.com/d010b/SpamMagnit",
+  "programmingLanguage": "Kotlin",
+  "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+  "author": { "@type": "Person", "name": "d010b", "url": "https://github.com/d010b" }
+}
+</script>
+
+<style>
+  :root{
+    --bg: #0b0f14;
+    --surface: #11161d;
+    --surface-2: #161d26;
+    --border: #232c38;
+    --text: #e6edf3;
+    --muted: #9aa7b4;
+    --accent: #6ea8fe;
+    --accent-2: #a97bff;
+    --danger: #ff6b6b;
+    --success: #22c55e;
+    --radius: 14px;
+    --maxw: 1080px;
+    --shadow: 0 10px 30px rgba(0,0,0,.35);
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --bg:#f7f9fc; --surface:#ffffff; --surface-2:#f0f4f9;
+      --border:#e1e8f0; --text:#0d1117; --muted:#4b5563;
+      --accent:#0b66ff; --accent-2:#6b3fe0; --shadow: 0 10px 30px rgba(13,17,23,.08);
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background: radial-gradient(1200px 600px at 10% -10%, rgba(110,168,254,.15), transparent 60%),
+                radial-gradient(900px 500px at 110% 10%, rgba(169,123,255,.12), transparent 60%),
+                var(--bg);
+    color:var(--text);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Inter, Arial, sans-serif;
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--accent); text-decoration:none}
+  a:hover{text-decoration:underline}
+  .container{max-width:var(--maxw); margin:0 auto; padding:0 20px}
+
+  /* Header */
+  header.site{
+    position:sticky; top:0; z-index:50;
+    backdrop-filter: blur(12px);
+    background: color-mix(in srgb, var(--bg) 80%, transparent);
+    border-bottom:1px solid var(--border);
+  }
+  .nav{display:flex; align-items:center; justify-content:space-between; gap:16px; height:64px}
+  .brand{display:flex; align-items:center; gap:10px; font-weight:700; color:var(--text)}
+  .brand .logo{
+    width:32px; height:32px; border-radius:9px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display:grid; place-items:center; color:#fff; font-weight:800; font-size:14px;
+  }
+  .nav-links{display:flex; gap:20px; align-items:center}
+  .nav-links a{color:var(--muted); font-size:14px}
+  .nav-links a:hover{color:var(--text); text-decoration:none}
+  @media (max-width:860px){ .nav-links{display:none} }
+
+  /* Buttons */
+  .btn{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:10px 16px; border-radius:10px; font-weight:600; font-size:14px;
+    border:1px solid var(--border); background:var(--surface); color:var(--text);
+    transition: transform .15s ease, background .2s ease, border-color .2s ease;
+    cursor:pointer;
+  }
+  .btn:hover{transform: translateY(-1px); text-decoration:none}
+  .btn.primary{
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border-color: transparent; color:#fff;
+  }
+  .btn.ghost{background:transparent}
+
+  /* Hero */
+  .hero{padding:72px 0 48px}
+  .badge{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 12px; border-radius:999px; font-size:12px; font-weight:600;
+    background: var(--surface-2); border:1px solid var(--border); color:var(--muted);
+  }
+  .badge .dot{width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 10px #22c55e}
+  h1{font-size: clamp(30px, 5vw, 52px); line-height:1.1; margin:18px 0 14px; letter-spacing:-0.02em}
+  h1 .grad{
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .lead{font-size: clamp(16px, 1.6vw, 19px); color:var(--muted); max-width:760px; margin:0 0 22px}
+  .hero-actions{display:flex; flex-wrap:wrap; gap:12px}
+
+  /* Privacy pill in hero */
+  .privacy-pill{
+    display:inline-flex; align-items:center; gap:10px;
+    margin:0 0 28px; padding:10px 16px; border-radius:999px;
+    font-size:14px; font-weight:600;
+    background: color-mix(in srgb, var(--success) 12%, var(--surface));
+    border:1px solid color-mix(in srgb, var(--success) 40%, var(--border));
+    color: var(--text);
+  }
+  .privacy-pill .check{color: var(--success); font-size:16px; line-height:1}
+
+  /* Disclaimer */
+  .disclaimer{
+    margin:28px 0 0; padding:14px 16px; border-radius:var(--radius);
+    background: color-mix(in srgb, var(--danger) 10%, var(--surface));
+    border:1px solid color-mix(in srgb, var(--danger) 35%, var(--border));
+    color:var(--text); font-size:14px;
+  }
+  .disclaimer strong{color:var(--danger)}
+
+  /* Sections */
+  section{padding:56px 0; border-top:1px solid var(--border)}
+  h2{font-size: clamp(22px, 3vw, 30px); margin:0 0 12px; letter-spacing:-0.01em}
+  .section-sub{color:var(--muted); margin:0 0 28px; max-width:720px}
+
+  /* Grid cards */
+  .grid{display:grid; gap:16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr))}
+  .card{
+    background: var(--surface); border:1px solid var(--border);
+    border-radius: var(--radius); padding:20px; box-shadow: var(--shadow);
+    transition: border-color .2s ease, transform .2s ease;
+  }
+  .card:hover{border-color: color-mix(in srgb, var(--accent) 40%, var(--border)); transform: translateY(-2px)}
+  .card h3{margin:0 0 8px; font-size:16px}
+  .card p{margin:0; color:var(--muted); font-size:14px}
+  .card .step{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:28px; height:28px; border-radius:8px; margin-bottom:10px;
+    background: color-mix(in srgb, var(--accent) 18%, var(--surface-2));
+    color: var(--accent); font-weight:700; font-size:13px;
+  }
+
+  /* Features list */
+  .features{display:grid; gap:12px; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr))}
+  .feature{
+    display:flex; gap:10px; align-items:flex-start;
+    padding:14px 16px; border-radius:12px;
+    background: var(--surface-2); border:1px solid var(--border);
+    font-size:14px; color:var(--muted);
+  }
+  .feature .check{color:var(--success); flex:0 0 auto; margin-top:2px}
+
+  /* Requirements */
+  .req{display:flex; flex-wrap:wrap; gap:10px}
+  .req span{
+    padding:6px 12px; border-radius:999px; font-size:13px;
+    background: var(--surface-2); border:1px solid var(--border); color:var(--muted);
+  }
+
+  /* CTA */
+  .cta{
+    text-align:center; padding:48px 24px; border-radius: var(--radius);
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 14%, var(--surface)), color-mix(in srgb, var(--accent-2) 14%, var(--surface)));
+    border:1px solid var(--border);
+  }
+  .cta h2{margin-bottom:8px}
+  .cta p{color:var(--muted); margin:0 0 20px}
+
+  /* Footer */
+  footer.site{
+    padding:28px 0 48px; border-top:1px solid var(--border);
+    color:var(--muted); font-size:13px;
+  }
+  footer .row{display:flex; flex-wrap:wrap; gap:12px; justify-content:space-between; align-items:center}
+  footer a{color:var(--muted)}
+  footer a:hover{color:var(--text)}
+
+  /* Code */
+  code, pre{
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px;
+  }
+  pre{
+    background: var(--surface-2); border:1px solid var(--border);
+    border-radius:12px; padding:14px 16px; overflow:auto;
+  }
+  code{background: var(--surface-2); padding:2px 6px; border-radius:6px}
+  pre code{background:none; padding:0}
+
+  /* Privacy section highlight */
+  .privacy-card{
+    background: linear-gradient(135deg,
+      color-mix(in srgb, var(--success) 10%, var(--surface)),
+      color-mix(in srgb, var(--accent) 8%, var(--surface)));
+    border:1px solid color-mix(in srgb, var(--success) 35%, var(--border));
+    border-radius: var(--radius);
+    padding:28px;
+    box-shadow: var(--shadow);
+  }
+  .privacy-card h3{margin:0 0 10px; font-size:18px; display:flex; align-items:center; gap:10px}
+  .privacy-card h3 .shield{color:var(--success); font-size:20px}
+  .privacy-card p{margin:0 0 14px; color:var(--muted)}
+  .privacy-card ul{margin:0; padding-left:20px; color:var(--text)}
+  .privacy-card ul li{margin:6px 0}
+  .privacy-card .no-collect{
+    display:inline-flex; align-items:center; gap:8px;
+    padding:6px 12px; border-radius:999px; font-size:13px; font-weight:600;
+    background: color-mix(in srgb, var(--success) 16%, var(--surface-2));
+    border:1px solid color-mix(in srgb, var(--success) 40%, var(--border));
+    color: var(--text);
+  }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="container nav">
+    <a class="brand" href="./">
+      <span class="logo">SM</span>
+      <span>SpamMagnit</span>
+    </a>
+    <nav class="nav-links" aria-label="Основная навигация">
+      <a href="#about">О проекте</a>
+      <a href="#how">Как работает</a>
+      <a href="#features">Возможности</a>
+      <a href="#privacy">Приватность</a>
+      <a href="#install">Установка</a>
+      <a href="https://github.com/d010b/SpamMagnit" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+    <a class="btn primary" href="https://github.com/d010b/SpamMagnit/releases" target="_blank" rel="noopener">Скачать APK</a>
+  </div>
+</header>
+
+<main>
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <span class="badge"><span class="dot"></span> Исследовательский проект · GPL-3.0 · Kotlin</span>
+      <h1>SpamMagnit — <span class="grad">активатор спам-звонков</span> как индикатор утечки номера</h1>
+      <p class="lead">
+        Android-приложение, которое иллюстрирует проблему передачи номера телефона через AdTech-интеграции мобильных операторов.
+        Проект показывает, как без звонка, формы и прямого согласия номер может попадать в рекламные системы — и как это можно использовать для тестирования спам-защиты.
+      </p>
+
+      <!-- Краткий сигнал о приватности -->
+      <div class="privacy-pill">
+        <span class="check">🛡</span>
+        Приложение не собирает и не передаёт никакую информацию о пользователе
+      </div>
+
+      <div class="hero-actions">
+        <a class="btn primary" href="https://github.com/d010b/SpamMagnit/releases" target="_blank" rel="noopener">Скачать последний APK</a>
+        <a class="btn ghost" href="https://github.com/d010b/SpamMagnit" target="_blank" rel="noopener">Исходный код на GitHub</a>
+      </div>
+
+      <div class="disclaimer">
+        <strong>Disclaimer:</strong> Проект предназначен исключительно для образовательных и исследовательских целей.
+        Автор не несёт ответственности за использование в противоправных целях.
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="container">
+      <h2>О проекте</h2>
+      <p class="section-sub">
+        Мобильный оператор в момент выхода в интернет через LTE передаёт ваш публичный IP-адрес.
+        Сайт (или установленный на нём скрипт аналитики) отправляет этот IP в AdTech-платформу, имеющую договор с оператором.
+        Платформа запрашивает у оператора номер телефона, соответствующий IP, — и получает ответ.
+        Без звонка. Без формы. Без прямого согласия.
+      </p>
+      <div class="grid">
+        <div class="card">
+          <h3>Проблема</h3>
+          <p>Утечка номера через AdTech-интеграции операторов нарушает законодательство о персональных данных.</p>
+        </div>
+        <div class="card">
+          <h3>Иллюстрация</h3>
+          <p>Приложение не выявляет конкретные механизмы утечки, а активирует их простым перебором доменов.</p>
+        </div>
+        <div class="card">
+          <h3>Результат</h3>
+          <p>Активация спам-звонков до ~300 в первые сутки с постепенным снижением активности.</p>
+        </div>
+        <div class="card">
+          <h3>Применение</h3>
+          <p>Тестирование спам-защиты, сбор номеров спам-центров, формирование жалоб в компетентные органы.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW -->
+  <section id="how">
+    <div class="container">
+      <h2>Как это работает</h2>
+      <p class="section-sub">Три этапа: сбор доменов, очистка, посещение.</p>
+      <div class="grid">
+        <div class="card">
+          <span class="step">1</span>
+          <h3>Сбор доменов</h3>
+          <p>Для каждого из 33 IP-адресов запрашиваются связанные домены с разных хостингов.</p>
+        </div>
+        <div class="card">
+          <span class="step">1.5</span>
+          <h3>Сортировка и фильтрация</h3>
+          <p>Приведение к нижнему регистру, удаление дубликатов, отбрасывание IP, фильтр по российским зонам, группировка по apex.</p>
+        </div>
+        <div class="card">
+          <span class="step">2</span>
+          <h3>Посещение домена</h3>
+          <p>Около 100k доменов: сначала HTTPS, при неудаче — HTTP. Успех — любой HTTP-код и несколько прочитанных байт (до 16 КБ).</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section id="features">
+    <div class="container">
+      <h2>Возможности</h2>
+      <p class="section-sub">Асинхронная архитектура, кэш, foreground service и адаптивная фильтрация.</p>
+      <div class="features">
+        <div class="feature"><span class="check">✔</span> Асинхронный сбор доменов: 2 IP параллельно, до 12 проверок одновременно</div>
+        <div class="feature"><span class="check">✔</span> Кэш ответов на 24 часа — ускоряет повторные запуски</div>
+        <div class="feature"><span class="check">✔</span> Foreground Service с уведомлением и кнопкой «Стоп»</div>
+        <div class="feature"><span class="check">✔</span> WakeLock с продлением каждые 10 минут</div>
+        <div class="feature"><span class="check">✔</span> Лог в реальном времени: последние 20 проверок с цветовой индикацией</div>
+        <div class="feature"><span class="check">✔</span> Корректная обработка отмены без потери прогресса</div>
+        <div class="feature"><span class="check">✔</span> Адаптивная фильтрация: исключение поддоменов, ограничение на apex</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRIVACY -->
+  <section id="privacy">
+    <div class="container">
+      <h2>Приватность</h2>
+      <p class="section-sub">
+        Приложение создано для исследования проблемы утечки данных — и само по себе не создаёт новую.
+        Ниже — что именно <strong>не делает</strong> SpamMagnit.
+      </p>
+
+      <div class="privacy-card">
+        <h3><span class="shield">🛡</span> Приложение не собирает и не отправляет никакую информацию о пользователе</h3>
+
+        <p>
+          SpamMagnit — локальный инструмент. Всё, что он делает, происходит на вашем устройстве:
+          он перебирает домены и проверяет их доступность. Никакие ваши данные при этом никуда не уходят.
+        </p>
+
+        <p class="no-collect">✔ Нет сбора персональных данных</p>
+
+        <ul>
+          <li><strong>Не собирает</strong> ваше имя, номер телефона, e-mail, IMEI, IMSI, MSISDN, MAC-адрес, геолокацию, список контактов, SMS, журнал звонков, установленные приложения, фото, файлы и т. п.</li>
+          <li><strong>Не отправляет</strong> никакую статистику, аналитику, телеметрию, crash-репорты или «обезличенные» данные на серверы автора или третьих лиц.</li>
+          <li><strong>Не использует</strong> сторонние SDK для аналитики, рекламы, трекинга или атрибуции (Google Analytics, Firebase, Facebook SDK, Adjust, AppsFlyer и подобные отсутствуют).</li>
+          <li><strong>Не требует</strong> регистрации, аккаунта, входа по номеру телефона или e-mail.</li>
+          <li><strong>Не запрашивает</strong> разрешения на доступ к контактам, SMS, журналу звонков, геолокации, камере, микрофону или хранилищу.</li>
+          <li><strong>Не передаёт</strong> ваш IP-адрес, идентификаторы устройства или какие-либо метаданные на серверы проекта.</li>
+        </ul>
+
+        <p style="margin-top:16px">
+          <strong>Что приложение действительно делает:</strong> устанавливает сетевые соединения с публичными доменами
+          (HTTPS/HTTP) для проверки их доступности — это и есть суть исследовательского сценария.
+          Список доменов и результаты проверок остаются на устройстве и не покидают его.
+        </p>
+
+        <p style="margin-top:14px; color:var(--muted); font-size:14px">
+          Исходный код полностью открыт (лицензия GPL-3.0) — вы можете убедиться в отсутствии сбора данных самостоятельно:
+          <a href="https://github.com/d010b/SpamMagnit" target="_blank" rel="noopener">github.com/d010b/SpamMagnit</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- REQUIREMENTS / INSTALL -->
+  <section id="install">
+    <div class="container">
+      <h2>Требования и установка</h2>
+      <p class="section-sub">Приложение работает на Android 7.0+ (целевая — Android 14).</p>
+      <div class="req">
+        <span>Android 7.0+ (API 24)</span>
+        <span>Целевая: Android 14 (API 34)</span>
+        <span>Мобильный трафик ≥ 1.3 ГБ</span>
+        <span>Время работы 2–5 часов</span>
+        <span>Зарядное устройство подключено</span>
+      </div>
+
+      <h3 style="margin-top:28px">Установка</h3>
+      <pre><code>1. Скачайте последний APK из раздела Releases
+2. Разрешите установку из неизвестных источников
+3. Установите APK
+4. Выдайте разрешения: Интернет, уведомления, фоновый сервис</code></pre>
+
+      <div style="margin-top:18px; display:flex; gap:12px; flex-wrap:wrap">
+        <a class="btn primary" href="https://github.com/d010b/SpamMagnit/releases" target="_blank" rel="noopener">Перейти к Releases</a>
+        <a class="btn ghost" href="https://github.com/d010b/SpamMagnit#readme" target="_blank" rel="noopener">README на GitHub</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section>
+    <div class="container">
+      <div class="cta">
+        <h2>Поддержите проект</h2>
+        <p>Поставьте звезду на GitHub, сообщите об issue или предложите улучшение — это помогает проекту развиваться.</p>
+        <div style="display:flex; gap:12px; justify-content:center; flex-wrap:wrap">
+          <a class="btn primary" href="https://github.com/d010b/SpamMagnit" target="_blank" rel="noopener">⭐ Поставить звезду</a>
+          <a class="btn ghost" href="https://github.com/d010b/SpamMagnit/issues" target="_blank" rel="noopener">Сообщить об issue</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="container row">
+    <div>© <span id="year"></span> SpamMagnit · Лицензия GPL-3.0 · Не собирает и не передаёт данные пользователя</div>
+    <div>
+      <a href="https://github.com/d010b/SpamMagnit" target="_blank" rel="noopener">GitHub</a> ·
+      <a href="https://github.com/d010b/SpamMagnit/releases" target="_blank" rel="noopener">Releases</a> ·
+      <a href="https://github.com/d010b/SpamMagnit/blob/main/LICENSE" target="_blank" rel="noopener">License</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
