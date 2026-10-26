@@ -1,0 +1,8 @@
+# Проект: SpamMagnit — https://d010b.github.io/SpamMagnit/
+
+User-agent: *
+Allow: /
+Allow: /SpamMagnit/
+Disallow: /SpamMagnit/private/
+Disallow: /SpamMagnit/tmp/
+Sitemap: https://d010b.github.io/SpamMagnit/sitemap.xml
