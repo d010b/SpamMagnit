@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+Allow: /SpamMagnit/
+Sitemap: https://d010b.github.io/SpamMagnit/sitemap.xml
